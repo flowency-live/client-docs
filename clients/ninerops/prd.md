@@ -1,6 +1,6 @@
 # Requirements Document
 
-## Introduction - Jason test
+## Introduction
 
 The Events Management & Client Portal system transforms NinerOps from a reactive booking tool into a proactive sales engine. The system manages events (motorsports races, TV productions, music tours, esports tournaments) as top-level entities that contain multiple client participations, each with their own bookings. It enables L9 staff to conduct targeted outreach campaigns and provides clients with a self-service portal to configure quotes, reuse previous configurations, and manage their event participation.
 
