@@ -7,11 +7,16 @@ The Events Management & Client Portal system transforms NinerOps from a reactive
 This feature addresses the need to:
 - Centralised online, realtime platform that can handle multiple contributors editing, amending and tracking bookings. 
 - Serve as an operational dashboard for management to view upcoming bookings, assign tasks, and for staff to add notes to bookings. 
-- Proactively reach out to clients 3-6 months before events with targeted campaigns
+- Send detailed professional booking confirmations direct from the application that are optimised for phone, email and PDF as well as being able to export bookings to an excel spreadsheet. 
+- Upload / download bulk bookings to spreadsheets to send to suppliers and then allow for reupload from spreadsheet back into the booking platform when updates / quotes have been received. 
+- Be used as a reporting tool to show revenue, comparing to last year, valuing clients, demonstrate what areas of the business (car hire, van hire, transfers / chauffeurs, coaches) are the most valuable for any given client, event, month, location etc. This management information will be used to help guide our sales approach. 
+- be used as an email marketing platform that we can send out regular updates and newsletters to our clients. 
 - Enable configuration reusability across similar events (same client, same event type)
 - Track event lifecycle from discovery through booking confirmation, delivery and invoicing. 
-- Provide unified visibility for L9 staff across all clients at an event while maintaining client privacy
-
+- Provide unified visibility for L9 staff across all clients at an event while maintaining client privacy.
+- Also serve as a CRM where we can store client data securely, include notes, track client movement, track spend, track the sales cycle, and management can view progress / activity of sales staff. 
+- Also serve as HR function where staff can book holidays / management approve and track holidays. We can also store employee data like contracts and performance reviews, track progress towards annual targets etc. 
+- 
 ## Glossary
 
 - **Event_System**: The NinerOps Events Management & Client Portal system
