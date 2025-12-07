@@ -1,4 +1,4 @@
-# Durdle Platform - CTO Status Report
+﻿# Durdle Platform - CTO Status Report
 
 **Client:** Dorset Transfer Company
 **Last Updated:** December 6, 2025
