@@ -1,8 +1,9 @@
 # Durdle Platform - Master Product Backlog
 
 **Document Owner:** CTO & CPO (Collaborative)
-**Last Updated:** Current Sprint
+**Last Updated:** December 8, 2025
 **Status:** Active Development Backlog
+**New Section:** Phase 2.5 Quick Wins added
 
 ---
 
@@ -643,6 +644,248 @@ DURDLE-12345 confirmed. Pickup: Bournemouth Station, Dec 10 at 14:30. £28 paid.
 
 ---
 
+## 🎯 PHASE 2.5 - QUICK WINS (Before Payment Integration)
+
+These features can be built NOW without waiting for Phase 3 (Stripe/Booking).
+They leverage existing backend infrastructure and add immediate value.
+
+---
+
+### QUOTE-001: Customer Quote Retrieval UI
+**Priority:** P1 (CRITICAL)
+**Effort:** S (3-5 days)
+**Status:** Backend API exists, frontend needed
+**User Story:** As a customer, I want to retrieve my quote using a reference code so I can share it or return to it later.
+
+**What Exists:**
+- Backend: `quotes-manager` Lambda with GET endpoint
+- DynamoDB: Quotes stored with unique quoteId
+
+**Acceptance Criteria:**
+- [ ] Quote retrieval page at `/quote/retrieve`
+- [ ] Input: Quote reference code (e.g., "DURDLE-abc123")
+- [ ] Display: Full quote details (route, price, vehicle, expiry countdown)
+- [ ] If expired: Show "Quote expired" with option to generate new quote
+- [ ] If active: Show "Proceed to Booking" button (disabled until Phase 3)
+- [ ] Mobile-friendly design
+- [ ] Loading states and error handling
+
+**Technical Implementation:**
+- Frontend: New page with form + quote display component
+- API: `GET /api/quotes/{quoteId}` (already exists)
+
+**Business Value:**
+- Customers can return to quotes without starting over
+- Enables quote sharing (email, SMS)
+- Foundation for magic links
+
+---
+
+### QUOTE-002: Magic Link Quote Sharing
+**Priority:** P1 (CRITICAL)
+**Effort:** S (3-5 days)
+**Depends On:** QUOTE-001
+**User Story:** As a customer, I want to share my quote via a simple link so others can view it.
+
+**Acceptance Criteria:**
+- [ ] After quote generated, show "Share Quote" button
+- [ ] Generate shareable URL: `durdle.co.uk/quote/{quoteId}`
+- [ ] Copy link to clipboard functionality
+- [ ] Share via: Email, WhatsApp, SMS (native share on mobile)
+- [ ] Shared quote shows full details (read-only)
+- [ ] Track quote views (analytics event)
+- [ ] Social meta tags for link preview (Open Graph)
+
+**Technical Implementation:**
+- Frontend: Share modal with copy button and social share links
+- URL structure already supports this (`/quote/{quoteId}`)
+- Add `og:title`, `og:description` meta tags
+
+**Business Value:**
+- Viral sharing of quotes
+- Family/business can review before booking
+- Increases quote-to-booking conversion
+
+---
+
+### QUOTE-003: Email Quote to Customer
+**Priority:** P1 (CRITICAL)
+**Effort:** M (1-2 weeks)
+**Status:** CTO Spec Complete
+**User Story:** As a customer, I want to save and share my quote via email/link so I can return to it later.
+
+**Implementation Spec:** [QuoteEmail_Implementation_Plan.md](../../_Websites/Durdle/.documentation/FeatureDev/QuoteEmail_Implementation_Plan.md)
+
+**Dev Team Instructions:**
+1. Read the full implementation plan (link above)
+2. Backend: Extend `quotes-manager` with magic token + share endpoints
+3. Backend: AWS SES integration for branded HTML emails
+4. Frontend: Create `ShareQuoteModal` component
+5. Frontend: Create `/quote/[quoteId]` retrieval page
+6. Handle expired quotes (>48h) with auto-regeneration
+
+**Key Decisions (CEO Approved):**
+- Custom branded share modal (NOT just navigator.share)
+- Magic link for retrieval without login
+- Marketing consent: optional checkbox, store email only if checked
+- Expired quotes: regenerate with new price, show "Quote Refreshed" message
+- NO abandoned cart emails (GDPR + CEO preference) - track for reporting only
+- NO edit quote feature - customer creates new quote instead
+
+---
+
+### PRICING-002: Surge Pricing Calendar UI
+**Priority:** P2 (HIGH)
+**Effort:** M (1-2 weeks)
+**Status:** CTO Spec Complete
+**User Story:** As an admin, I want to set surge pricing rules that automatically apply to quotes during peak periods.
+
+**Implementation Spec:** [SurgePricing_Implementation_Plan.md](../../_Websites/Durdle/.documentation/FeatureDev/SurgePricing_Implementation_Plan.md)
+
+**Dev Team Instructions:**
+1. Read the full implementation plan (link above)
+2. Backend: Create `durdle-surge-rules-dev` DynamoDB table
+3. Backend: Add surge CRUD endpoints to `pricing-manager` Lambda
+4. Backend: Modify `quotes-calculator` to check surge rules (see stacking logic in spec)
+5. Frontend: Admin calendar UI at `/admin/pricing/surge`
+6. Frontend: Rule creation modal with multiplier options
+7. Include pre-defined templates (UK Bank Holidays, Dorset School Holidays)
+
+**Key Decisions (CEO Approved):**
+- Rules STACK (multiply together): Christmas Week 1.5x + Christmas Day 1.5x = 2.25x
+- Rule types: specific dates, date ranges, day-of-week, time-of-day
+- Multipliers: quick-select buttons (1.1x-2.0x) + custom input (1.0-3.0x)
+- Max combined multiplier: 3.0x hard cap
+- Customer sees: "Peak period pricing applies" banner (no multiplier shown)
+- Admin sees: stacking warning when multiple rules apply
+
+---
+
+### LOCATION-001: Airport/Station Detection
+**Priority:** P2 (HIGH)
+**Effort:** XS (1-2 days)
+**User Story:** As a customer booking airport/station transfer, I want to provide flight/train details so my driver can track delays.
+
+**What Exists:**
+- Frontend: Google Places Autocomplete for location selection
+- Backend: `locations-lookup` Lambda returns place details
+
+**Acceptance Criteria:**
+- [ ] Detect when pickup/dropoff is airport (types includes "airport")
+- [ ] Detect when pickup/dropoff is train station (types includes "train_station")
+- [ ] If airport detected: Show "Flight Number" and "Airline" fields
+- [ ] If train station detected: Show "Train Number" and "Departure Station" fields
+- [ ] Fields are optional but encouraged
+- [ ] Store flight/train details with quote
+- [ ] Display details in admin quote view
+
+**Technical Implementation:**
+- Frontend: Check Google Places API response `types` array
+- Conditional form fields based on location type
+- Backend: Add `flightDetails` / `trainDetails` to quote schema
+
+**Business Value:**
+- Drivers can track flight/train delays
+- Better customer service
+- Professional airport transfer experience
+
+---
+
+### FEEDBACK-001: Admin Feedback Dashboard
+**Priority:** P2 (HIGH)
+**Effort:** S (3-5 days)
+**Status:** Backend API exists, frontend needed
+**User Story:** As an admin, I want to view all customer feedback so I can monitor service quality.
+
+**What Exists:**
+- Backend: `feedback-manager` Lambda with CRUD endpoints
+- DynamoDB: `durdle-feedback-dev` table
+
+**Acceptance Criteria:**
+- [ ] Admin page at `/admin/feedback`
+- [ ] Table: Date, Customer Name, Rating (1-5 stars), Comment, Booking Ref
+- [ ] Filter by: Rating (1-5, or "Needs attention" for 1-2), Date range
+- [ ] Sort by: Date, Rating
+- [ ] Average rating displayed prominently
+- [ ] Click row to view full feedback details
+- [ ] Mark as "Reviewed" / "Action Taken" / "Resolved"
+- [ ] Respond to feedback (internal notes)
+
+**Technical Implementation:**
+- Backend: API already exists
+- Frontend: New admin table page
+- Add status field to feedback items
+
+**Business Value:**
+- Monitor customer satisfaction
+- Identify service issues early
+- Data for driver performance reviews
+
+---
+
+### ANALYTICS-002: Quote Conversion Funnel Dashboard
+**Priority:** P2 (HIGH)
+**Effort:** M (1-2 weeks)
+**User Story:** As an admin, I want to see quote analytics so I can understand conversion patterns.
+
+**Acceptance Criteria:**
+- [ ] Dashboard at `/admin/analytics`
+- [ ] Funnel visualization: Quotes Generated -> Quotes Viewed -> Quotes Emailed -> (Future: Bookings)
+- [ ] Time period selector: Today, 7 days, 30 days, 90 days
+- [ ] Charts:
+  - Quotes per day (line chart)
+  - Quotes by vehicle type (pie chart)
+  - Popular routes (bar chart)
+  - Quotes by hour of day (heatmap)
+- [ ] Key metrics cards:
+  - Total quotes (period)
+  - Average quote value
+  - Most popular pickup location
+  - Most popular dropoff location
+- [ ] Export data to CSV
+
+**Technical Implementation:**
+- Backend: Aggregate queries on quotes table
+- Consider pre-computed daily aggregates for performance
+- Frontend: Chart.js or Recharts for visualizations
+
+**Business Value:**
+- Understand customer demand patterns
+- Identify popular routes for fixed pricing
+- Data-driven marketing decisions
+
+---
+
+### DROPOFF-001: Drop-off Confirmation Tracking
+**Priority:** P3 (MEDIUM)
+**Effort:** M (1-2 weeks)
+**Note:** Foundational tracking - full implementation in Phase 4 with driver app
+**User Story:** As an admin, I want to track when journeys are completed so I can monitor operations.
+
+**Phase 2.5 Scope (Manual Tracking):**
+- [ ] Admin can mark booking as "Dropped off" with timestamp
+- [ ] "Mark Complete" button on booking detail page
+- [ ] Completion notes field (optional)
+- [ ] Completion timestamp stored
+- [ ] Report: Completed journeys with actual drop-off times
+
+**Phase 4 Scope (Automated):**
+- Driver app auto-detects arrival at destination
+- GPS tracking confirms drop-off location
+- Customer receives "Journey Complete" notification
+
+**Technical Implementation:**
+- Backend: Add `completedAt`, `completionNotes` to booking schema
+- Frontend: Completion modal in admin booking detail
+- API: `PATCH /api/admin/bookings/{id}/complete`
+
+**Business Value:**
+- Operations visibility
+- Foundation for journey analytics
+- Driver performance tracking (on-time percentage)
+
+---
+
 ## 📋 TECHNICAL DEBT & INFRASTRUCTURE
 
 ### TECH-001: Infrastructure as Code (IaC)
@@ -728,7 +971,30 @@ DURDLE-12345 confirmed. Pickup: Bournemouth Station, Dec 10 at 14:30. £28 paid.
 
 ## 🎯 RECOMMENDED SPRINT PLAN
 
-### Sprint 1 (Next 2 Weeks) - Quote Management Foundation
+### Sprint 0: Phase 2.5 Quick Wins (Next 2-3 Weeks)
+**Goal:** Ship customer-facing features using existing backend infrastructure
+
+**Week 1:**
+- [ ] QUOTE-001: Customer Quote Retrieval UI (S) - 3-5 days
+- [ ] LOCATION-001: Airport/Station Detection (XS) - 1-2 days
+
+**Week 2:**
+- [ ] QUOTE-002: Magic Link Quote Sharing (S) - 3-5 days
+- [ ] FEEDBACK-001: Admin Feedback Dashboard (S) - 3-5 days
+
+**Week 3 (Optional):**
+- [ ] QUOTE-003: Email Quote to Customer (M) - 1 week
+- [ ] PRICING-002: Surge Pricing Calendar UI (M) - 1 week
+
+**Business Value:**
+- Customer can retrieve and share quotes (viral growth)
+- Admin can see feedback (service quality)
+- Flight/train details captured (professional service)
+- All without waiting for payment integration
+
+---
+
+### Sprint 1 (Weeks 4-5) - Quote Management Foundation
 **Goal:** Admin visibility into quotes and abandonment tracking
 
 - [ ] ADMIN-001: Admin Quote Management Dashboard (M)
@@ -742,7 +1008,7 @@ DURDLE-12345 confirmed. Pickup: Bournemouth Station, Dec 10 at 14:30. £28 paid.
 
 ---
 
-### Sprint 2-3 (Weeks 3-6) - Production Setup & Security
+### Sprint 2-3 (Weeks 6-9) - Production Setup & Security
 **Goal:** Production environment ready for Phase 3 launch
 
 - [ ] INFRA-001: Production Environment Setup (M)
@@ -756,7 +1022,7 @@ DURDLE-12345 confirmed. Pickup: Bournemouth Station, Dec 10 at 14:30. £28 paid.
 
 ---
 
-### Sprint 4-6 (Weeks 7-12) - Phase 3 Core (Revenue Generation)
+### Sprint 4-6 (Weeks 10-15) - Phase 3 Core (Revenue Generation)
 **Goal:** Customers can pay for bookings, admins can manage them
 
 - [ ] PAYMENT-001: Stripe Payment Integration (L)
@@ -771,7 +1037,7 @@ DURDLE-12345 confirmed. Pickup: Bournemouth Station, Dec 10 at 14:30. £28 paid.
 
 ---
 
-### Sprint 7-8 (Weeks 13-16) - Phase 3 Completion
+### Sprint 7-8 (Weeks 16-19) - Phase 3 Completion
 **Goal:** Complete customer communication and booking management
 
 - [ ] NOTIFY-001: Booking Confirmation Emails (M)
